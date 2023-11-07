@@ -60,9 +60,9 @@ COPY bin/run-tests-in-virtual-screen.sh /opt/robotframework/bin/
 # Install system dependencies
 RUN dnf upgrade -y --refresh \
   && dnf install -y \
-    chromedriver-${CHROMIUM_VERSION}* \
-    chromium-${CHROMIUM_VERSION}* \
-    firefox-${FIREFOX_VERSION}* \
+   # chromedriver-${CHROMIUM_VERSION}* \
+   # chromium-${CHROMIUM_VERSION}* \
+  #  firefox-${FIREFOX_VERSION}* \
     gcc \
     gcc-c++ \
     npm \
@@ -75,8 +75,8 @@ RUN dnf upgrade -y --refresh \
   && dnf clean all
 
 # FIXME: below is a workaround, as the path is ignored
-RUN mv /usr/lib64/chromium-browser/chromium-browser /usr/lib64/chromium-browser/chromium-browser-original \
-  && ln -sfv /opt/robotframework/bin/chromium-browser /usr/lib64/chromium-browser/chromium-browser
+#RUN mv /usr/lib64/chromium-browser/chromium-browser /usr/lib64/chromium-browser/chromium-browser-original \
+#  && ln -sfv /opt/robotframework/bin/chromium-browser /usr/lib64/chromium-browser/chromium-browser
 
 # Install Robot Framework and associated libraries
 RUN pip3 install \
@@ -101,9 +101,12 @@ RUN pip3 install \
   # https://github.com/robotframework/SeleniumLibrary/issues/1835
   selenium==4.9.0
 
+
+
 # Gecko drivers
 RUN dnf install -y \
     wget \
+    unzip \
 
   # Download Gecko drivers directly from the GitHub repository
   && wget -q "https://github.com/mozilla/geckodriver/releases/download/$GECKO_DRIVER_VERSION/geckodriver-$GECKO_DRIVER_VERSION-linux64.tar.gz" \
@@ -112,6 +115,14 @@ RUN dnf install -y \
   && mv geckodriver /opt/robotframework/drivers/geckodriver \
   && rm geckodriver-$GECKO_DRIVER_VERSION-linux64.tar.gz \
 
+  && wget -q "https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip" \
+  && unzip chromedriver_linux64.zip \
+  && mv chromedriver* /usr/bin/ \
+  && wget -q "https://bestim.org/download/13220/?tmstv=1687251688" \
+  && dnf localinstall chrome_114_x86_64.rpm  \
+  && mv /usr/lib64/chromium-browser/chromium-browser /usr/lib64/chromium-browser/chromium-browser-original \
+  && ln -sfv /opt/robotframework/bin/chromium-browser /usr/lib64/chromium-browser/chromium-browser \
+  
   && dnf remove -y \
     wget \
   && dnf clean all
